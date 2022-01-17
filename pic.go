@@ -3,6 +3,7 @@ package gopic
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -38,6 +39,11 @@ func NewPic() (*Pic, error) {
 }
 
 func (obj *Pic) Extract(videoFile string, second string, outputFile string) error {
+	_, err := os.Stat(videoFile)
+	if err != nil {
+		return err
+	}
+
 	// set default second
 	if second == "" {
 		second = "1"
