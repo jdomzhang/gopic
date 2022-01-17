@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 
 	"github.com/jdomzhang/gopic/utils"
@@ -39,7 +40,14 @@ func NewPic() (*Pic, error) {
 }
 
 func (obj *Pic) Extract(videoFile string, second string, outputFile string) error {
+	// check input video file existing
 	_, err := os.Stat(videoFile)
+	if err != nil {
+		return err
+	}
+
+	// check output folder existing
+	_, err = os.Stat(path.Dir(outputFile))
 	if err != nil {
 		return err
 	}
