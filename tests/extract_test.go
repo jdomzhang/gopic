@@ -33,3 +33,19 @@ func TestExtractPng(t *testing.T) {
 	err = pic.Extract(sampleInputFile, "1", sampleOutputPngFile)
 	assert.NoError(t, err)
 }
+
+func Test_ExtractJpg_From_URL(t *testing.T) {
+	pic, err := gopic.NewPic()
+	assert.NoError(t, err)
+
+	err = pic.Extract("https://cdn.edesoft.com/youzheng/upload/202312/04/132113.mp4", "15", sampleOutputJpgFile)
+	assert.NoError(t, err)
+}
+
+func Test_OnlineURL(t *testing.T) {
+	pic, err := gopic.NewPic()
+	assert.NoError(t, err)
+
+	err = pic.CheckVideoFile("https://cdn.edesoft.com/youzheng/upload/202312/04/132113.mp4")
+	assert.NoError(t, err)
+}

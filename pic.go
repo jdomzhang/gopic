@@ -3,6 +3,7 @@ package gopic
 import (
 	"bytes"
 	"fmt"
+	"net/http"
 	"os"
 	"os/exec"
 	"path"
@@ -40,15 +41,30 @@ func NewPic() (*Pic, error) {
 }
 
 func (obj *Pic) Extract(videoFile string, second string, outputFile string) error {
-	// check input video file existing
-	_, err := os.Stat(videoFile)
-	if err != nil {
+	if err := obj.CheckVideoFile(videoFile); err != nil {
 		return err
 	}
 
 	// check output folder existing
-	_, err = os.Stat(path.Dir(outputFile))
-	if err != nil {
+	// create file if not existing
+	if _, err := os.Stat(outputFile); os.IsNotExist(err) {
+		// create folder first
+		baseFolder := path.Dir(outputFile)
+		if _, err := os.Stat(baseFolder); os.IsNotExist(err) {
+			if err := os.MkdirAll(baseFolder, 0755); err != nil {
+				return err
+			}
+		} else if err != nil {
+			return err
+		}
+
+		// create file
+		f, err := os.Create(outputFile)
+		if err != nil {
+			return err
+		}
+		f.Close()
+	} else if err != nil {
 		return err
 	}
 
@@ -68,6 +84,29 @@ func (obj *Pic) Extract(videoFile string, second string, outputFile string) erro
 
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("command: (%s) | error: %s | message: %s %s", command, err, outb.String(), errb.String())
+	}
+
+	return nil
+}
+
+func (obj *Pic) CheckVideoFile(videoFile string) error {
+	isOnlineFile := strings.HasPrefix(videoFile, "http://") || strings.HasPrefix(videoFile, "https://")
+	if isOnlineFile {
+		// check online file available
+		resp, err := http.Get(videoFile)
+		if err != nil {
+			return err
+		}
+
+		// status code 2xx
+		if resp.StatusCode/100 != 2 {
+			return fmt.Errorf("url: %s | error, code: %d", videoFile, resp.StatusCode)
+		}
+	} else {
+		_, err := os.Stat(videoFile)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
